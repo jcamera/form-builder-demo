@@ -42,7 +42,7 @@
             },
             {
                 "type": "textarea",
-                "label": "query",
+                "label": "Query",
                 "name": "query",
                 "validation": {
                     "required": true,

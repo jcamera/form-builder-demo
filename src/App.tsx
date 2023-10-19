@@ -1,11 +1,12 @@
 
 import { useEffect, useState } from 'react';
 import './App.css';
-import FormBuilder from './formBuilder2';
+import FormBuilder from './FormBuilder';
+import { Schema } from './types';
 
 function App() {
 
-  const [schema, setSchema] = useState({});
+  const [schema, setSchema] = useState<Schema>({});
 
   useEffect(() => {
     const loadJson = async () => {
@@ -16,12 +17,7 @@ function App() {
     loadJson();
   }, []);
 
-  return (
-    <>
-      <h2>form builder demo</h2>
-      <FormBuilder schema={schema}/>
-    </>
-  )
+  return <FormBuilder schema={schema}/>;
 }
 
 export default App;

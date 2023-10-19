@@ -1,27 +1,26 @@
-# React + TypeScript + Vite
+# Form Builder Demo
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## setup
 
-Currently, two official plugins are available:
+ - git clone to local 
+ - cd into dir
+ - run `npm install`
+ - run `npm run dev`
+ - view `http://localhost:5173/` in browser
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+ ## considerations for next steps 
 
-## Expanding the ESLint configuration
+If this were to be continued...
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+Assuming we will want to serve different form schemas for different clients, we would create a back-end form service and some data store for the JSON form schema. The data store would probably take the form of document-based storage (like mongodb) or some kind of key-value store (like s3). 
 
-- Configure the top-level `parserOptions` property like this:
 
-```js
-   parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-   },
-```
+Of course we would need some kind of authentication and authorization. User credentials may be passed with a JWT, so that appropriate schemas are served. 
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+The form schema may easily be extended with different types of fields and different validations. We can also add a variety of conditional rules - here we added just one kind of rule, to turn on a field attribute on when another field is equal to one of the given values.  
+A more advanced version of this could allow nested schemas, or lists of data elements pulled from elsewhere. If schemas reference other schemas or lists, the final form schema would be generated in the form server, ready for the UI to process. 
+We may also allow for client-specific styles, including color schemes and logos, by creating placeholders for customizable elements in the render code.
+
+For client side maintainability we could separate out the various form field components and make it so the FormBuilder has no dependencies on component libraries outside React (like Material UI) or style engines. In this example are primarily relying on native form elements here rather than any form library, which makes it more future-proof. 
+
+For testing the FormBuilder as it expands, this could be a good use case for Jest snapshot tests as well as Storybook. These tests would ensure a given piece of schema will correctly render to the expected form element. 

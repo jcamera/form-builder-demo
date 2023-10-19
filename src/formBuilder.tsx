@@ -1,125 +1,90 @@
 import { useRef, useState, useEffect } from 'react';  
+import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import InputLabel from '@mui/material/InputLabel';
+import Button from '@mui/material/Button';
+import { Schema, FormHeader, FormField } from './types';
 
-interface Header {
-    title: string;
-    description?: string;
-};
 
-type FieldType = 'text' | 'select' | 'date' | 'textarea';
 
-interface Conditional {
-    fieldName: string;
-    equalTo: string | Array<string>;
-}
-
-interface ConditionalOnRule {
-    triggerField: string;
-    equalTo?: Array<string>;
-    targetField: string;
-    attribute: string;
-}
-
-interface ValidationOptions {
-    required?: boolean | Conditional;
-};
-
-type SelectOption = {
-    label: string;
-    value: string;
-};
-
-interface Field {
-    type: FieldType;
-    label: string;
-    name: string;
-    options?: Array<SelectOption>;
-    validation?: ValidationOptions;
-}
-
-interface Schema {
-    header: Header;
-    fields: Array<Field>;
-    conditionalRules: Array<ConditionalOnRule>;
-}
-
-const Header = ({ title, description }: Header) => {
+const Header = ({ title, description }: FormHeader) => {
     return (
-        <header>
-            <h1>{title}</h1>
+        <header style={{marginBottom: '12px'}}>
+            <h2>{title}</h2>
             <i>{description}</i>
         </header>
     );
 }
 
-//const Field = ({ type, label, name, options, validation }: Field) => {
-const Field = ({ handleChange, field }: {handleChange: Function, field: Field}) => {
+const Field = ({ handleChange, field }: {handleChange: Function, field: FormField}) => {
     const { type, label, name, options, validation } = field;
     let required: boolean = Boolean(validation && validation.required);
-    // if (required && validation.required?.conditionalOn) {
-    //     required = getConditionalRequired(validation.required?.conditionalOn);
-    // }
-    
-    //const required: boolean = Boolean(validation && validation.required);
-
     let input;
     switch (type) {
         case 'text': 
         case 'date':
-            input = <input type={type} name={name} id={name} required={required} onChange={handleChange}/>;
+            input = (<TextField fullWidth type={type} label={label} name={name} id={name} required={required} onChange={handleChange} InputLabelProps={{ shrink: true }}/>);
             break;
         case 'textarea':
-            input = <textarea name={name} id={name} required={required} onChange={handleChange}/>;
+            input = (
+                <TextField 
+                id={name}
+                name={name}
+                label={label}
+                multiline
+                fullWidth
+                rows={6}
+                required={required}
+                //onBlur={() => {  }}
+                onChange={handleChange}
+                //defaultValue="enter query"
+                />
+            );
             break;
         case 'select':
             input = (
-                <select name={name} id={name} required={required} onChange={handleChange}>
-                    <option value=''></option>
+                <FormControl fullWidth>
+                    <InputLabel id="select-label">{label}</InputLabel>
+                    <Select labelId="select-label"
+                        id={name}
+                        name={name} required={required} onChange={handleChange}
+                    >
                     {
-                        options?.map( ({label, value}) => (
-                            <option value={value}>{label}</option>
+                        options?.map( ({label, value}: { label: string, value: string}) => (
+                            <MenuItem value={value}>{label}</MenuItem>
                         ))
                     }
-                </select>
-            );
+                    </Select>
+                    </FormControl>
+            )
             break;
         default: 
             return null;
-    }   
+        }
 
-    return (
-        <>
-            <label htmlFor={name}>{label}</label>
-            <br/>
-            {input}
-            <br/>
-        </>
-    )
-    
+        return (
+            <div style={{margin: '22px 0'}}>
+                {input}
+            </div>
+        )
 }
 
 
 
 export default function FormBuilder ({schema}: {schema: Schema}) {
-    console.log('schema: ', schema);
-
     const formRef = useRef(null);
-    //const [triggerFields, setTriggerFields] = useState({});
     const [triggerFieldMap, setTriggerFieldMap] = useState({});
     const [isFormValid, setIsFormValid] = useState(false);
-
-    console.log({triggerFieldMap});
 
     useEffect(() => {
         if (schema.conditionalRules) {
             setTriggerFieldMap(
-                //schema.conditionalRules.map( rule => rule.triggerField)
-            //   const result = schema.conditionalRules.reduce( (acc, cur) => (acc[cur.triggerField] = cur), {})
                schema.conditionalRules.reduce( (acc, cur) => {
                     acc[cur.triggerField] = cur;
                     return acc;
                }, {})
-               //const result = new Map( schema.conditionalRules.map(rule => []))
-                //console.log({result});
             )
         }
     }, [schema])
@@ -139,8 +104,6 @@ export default function FormBuilder ({schema}: {schema: Schema}) {
     }
 
     const handleChange = e => {
-        console.log('handle change , ', e.target.value);
-        console.log('handle change , ', e.target.name);
         if (triggerFieldMap[e.target.name]) {
             const rule = triggerFieldMap[e.target.name]
             const targetElement = formRef.current.elements[rule.targetField];
@@ -150,15 +113,13 @@ export default function FormBuilder ({schema}: {schema: Schema}) {
                 targetElement.removeAttribute(rule.attribute);
         }
 
-        console.log('formRef.current.checkValidity() ', formRef.current.checkValidity());
+        //check if all required field have values and set state if changed
         const currentValidity = formRef.current.checkValidity();
         (currentValidity !== isFormValid) && setIsFormValid(currentValidity);
-
     }
 
     const { header, fields }: Schema = schema || {};
     
-
     return schema ? (
         <div>
             <Header {...header}/>
@@ -168,11 +129,8 @@ export default function FormBuilder ({schema}: {schema: Schema}) {
                         <Field handleChange={handleChange} field={field}/>
                     ))
                 }
-                <button type="submit" disabled={!isFormValid}>submit</button>
+                <Button type="submit" variant="contained" fullWidth disabled={!isFormValid} style={{marginTop: '18px'}}>submit</Button>
             </form>
         </div>
     ) : null;
 }
-
-
-//disabled={false}
