@@ -15,7 +15,7 @@ const labelMap: {[key: string]: string} = {
 export const formatHTMLTable = (data: Array<{name: string, value: string}>, schema: Schema): string => 
 `
 <body>
-    <h4>${schema?.header?.title}</h4>
+    <h4 style="text-align: center;">${schema?.header?.title}</h4>
     <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="bodyTable">
         <tr>
             <td align="center" valign="top">

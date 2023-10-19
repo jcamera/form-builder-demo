@@ -99,6 +99,8 @@ export default function FormBuilder ({schema}: {schema: Schema}) {
         const htmlResult = formatHTMLTable(formData, schema);
 
         console.log({formData: formData.filter( elem => elem.name && elem.value), htmlResult});
+        const resultElement = document?.getElementById("result");
+        resultElement && (resultElement.innerHTML = htmlResult);
     }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
