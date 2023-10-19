@@ -5,8 +5,8 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
 import Button from '@mui/material/Button';
-import { Schema, FormHeader, FormField } from './types';
-
+import { Schema, FormHeader, FormField, TriggerRule } from './types';
+import { formatHTMLTable } from './utils';
 
 
 const Header = ({ title, description }: FormHeader) => {
@@ -18,7 +18,7 @@ const Header = ({ title, description }: FormHeader) => {
     );
 }
 
-const Field = ({ handleChange, field }: {handleChange: Function, field: FormField}) => {
+const Field = ({ handleChange, field }: {handleChange: any, field: FormField}) => {
     const { type, label, name, options, validation } = field;
     let required: boolean = Boolean(validation && validation.required);
     let input;
@@ -29,17 +29,15 @@ const Field = ({ handleChange, field }: {handleChange: Function, field: FormFiel
             break;
         case 'textarea':
             input = (
-                <TextField 
-                id={name}
-                name={name}
-                label={label}
-                multiline
-                fullWidth
-                rows={6}
-                required={required}
-                //onBlur={() => {  }}
-                onChange={handleChange}
-                //defaultValue="enter query"
+                <TextField
+                    id={name}
+                    name={name}
+                    label={label}
+                    multiline
+                    fullWidth
+                    rows={6}
+                    required={required}
+                    onChange={handleChange}
                 />
             );
             break;
@@ -51,13 +49,13 @@ const Field = ({ handleChange, field }: {handleChange: Function, field: FormFiel
                         id={name}
                         name={name} required={required} onChange={handleChange}
                     >
-                    {
-                        options?.map( ({label, value}: { label: string, value: string}) => (
-                            <MenuItem value={value}>{label}</MenuItem>
-                        ))
-                    }
+                        {
+                            options?.map(({ label, value }: { label: string, value: string }) => (
+                                <MenuItem value={value}>{label}</MenuItem>
+                            ))
+                        }
                     </Select>
-                    </FormControl>
+                </FormControl>
             )
             break;
         default: 
@@ -72,16 +70,15 @@ const Field = ({ handleChange, field }: {handleChange: Function, field: FormFiel
 }
 
 
-
 export default function FormBuilder ({schema}: {schema: Schema}) {
     const formRef = useRef(null);
-    const [triggerFieldMap, setTriggerFieldMap] = useState({});
+    const [triggerFieldMap, setTriggerFieldMap] = useState<TriggerRule>({});
     const [isFormValid, setIsFormValid] = useState(false);
 
     useEffect(() => {
         if (schema.conditionalRules) {
             setTriggerFieldMap(
-               schema.conditionalRules.reduce( (acc, cur) => {
+               schema.conditionalRules.reduce( (acc: any, cur) => {
                     acc[cur.triggerField] = cur;
                     return acc;
                }, {})
@@ -89,33 +86,42 @@ export default function FormBuilder ({schema}: {schema: Schema}) {
         }
     }, [schema])
 
-
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log(e.target.elements);
 
-        const results = Array.from(e.target.elements).map( elem => (
+        const formData = Array.from((e.target as HTMLFormElement).elements).map( (elem: any) => (
             {
                 name: elem.name,
                 value: elem.value,
             }
-        ));
-        console.log({results});
+        )).filter( elem => elem.name && elem.value);
+
+        const htmlResult = formatHTMLTable(formData, schema);
+
+        console.log({formData: formData.filter( elem => elem.name && elem.value), htmlResult});
     }
 
-    const handleChange = e => {
-        if (triggerFieldMap[e.target.name]) {
-            const rule = triggerFieldMap[e.target.name]
-            const targetElement = formRef.current.elements[rule.targetField];
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        
+        if (formRef.current) {
+            const currentForm: HTMLFormElement | null  = formRef?.current as HTMLFormElement;
             
-            rule.equalTo.includes(e.target.value) ? 
-                targetElement.setAttribute(rule.attribute, true) : 
-                targetElement.removeAttribute(rule.attribute);
-        }
+            if (triggerFieldMap[e.target.name]) {
+                const rule = triggerFieldMap[e.target.name];
+                if (rule) {
+                   // const ruleTarget: string = rule?.targetField
+                    const targetElement = currentForm.elements[rule.targetField as any];
+                    
+                    rule?.equalTo?.includes(e.target.value) ? 
+                        targetElement.setAttribute(rule.attribute, "true") : 
+                        targetElement.removeAttribute(rule.attribute);
+                }
+            }
 
-        //check if all required field have values and set state if changed
-        const currentValidity = formRef.current.checkValidity();
-        (currentValidity !== isFormValid) && setIsFormValid(currentValidity);
+            //check if all required field have values and set state if changed
+            const currentValidity = currentForm.checkValidity();
+            (currentValidity !== isFormValid) && setIsFormValid(currentValidity);
+        }
     }
 
     const { header, fields }: Schema = schema || {};

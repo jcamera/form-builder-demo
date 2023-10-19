@@ -1,6 +1,6 @@
 
 export interface FormHeader {
-    title: string;
+    title?: string;
     description?: string;
 };
 
@@ -11,12 +11,15 @@ interface Conditional {
     equalTo: string | Array<string>;
 }
 
-interface ConditionalOnRule {
+export interface ConditionalOnRule {
     triggerField: string;
     equalTo?: Array<string>;
     targetField: string;
     attribute: string;
 }
+
+//for mapping conditional rules to some trigger field
+export type TriggerRule = { [key: string]: ConditionalOnRule }
 
 interface ValidationOptions {
     required?: boolean | Conditional;
