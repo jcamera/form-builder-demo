@@ -1,0 +1,62 @@
+{
+    "form": {
+        "header": {
+            "title": "Payroll Enquiry",
+            "description": "Please use this form for any Payroll related enquiries."
+        },
+        "fields": [
+            {
+                "type": "select",
+                "label": "What does your enquiry relate to?",
+                "name": "reason_select",
+                "validation": {
+                    "required": true
+                },
+                "options": [
+                    {
+                        "label": "Incorrect Pay",
+                        "value": "incorrect_pay"
+                    },
+                    {
+                        "label": "Missing Expense",
+                        "value": "missing_expense"
+                    },
+                    {
+                        "label": "Change of Bank Details",
+                        "value": "change_bank_details"
+                    },
+                    {
+                        "label": "Change of Address",
+                        "value": "change_address"
+                    },
+                    {
+                        "label": "Other",
+                        "value": "other"
+                    }
+                ]
+            },
+            {
+                "type": "date",
+                "label": "Date of payslip being queried (if applicable)",
+                "name": "payslip_date"
+            },
+            {
+                "type": "textarea",
+                "label": "query",
+                "name": "query",
+                "validation": {
+                    "required": true,
+                    "maxLength": 240
+                }
+            }
+        ],
+        "conditionalRules": [
+            {
+                "triggerField": "reason_select",
+                "equalTo": ["incorrect_pay", "missing_expense"],
+                "targetField": "payslip_date",
+                "attribute": "required"
+            }
+        ]
+    }
+}
